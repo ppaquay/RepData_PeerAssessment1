@@ -52,6 +52,10 @@ To make a histogram of the total number of steps I simply use the *hist()* funct
 
 ```r
 hist(sum.steps.day$StepsPerDay, main = "Total number of steps per day", xlab = "Steps per day")
+abline(v = mean(sum.steps.day$StepsPerDay, na.rm = TRUE), col = "red")
+abline(v = median(sum.steps.day$StepsPerDay, na.rm = TRUE), col = "blue", lty = 2)
+legend("topright", lty = c(1, 2), col = c("red", "blue"), legend = c("Mean", 
+    "Median"))
 ```
 
 ![plot of chunk unnamed-chunk-4](figure/unnamed-chunk-4.png) 
@@ -99,6 +103,9 @@ To plot the time series of the 5-minute intervals and the average number of step
 plot(as.POSIXct(avg.steps.interval$Interval, format = "%H:%M:%S"), avg.steps.interval$AvgSteps, 
     type = "l", main = "Average number of steps across all days vs. 5-min interval", 
     xlab = "Time intervals", ylab = "Avg. number of steps (across all days)")
+abline(v = as.POSIXct(avg.steps.interval[which.max(avg.steps.interval$AvgSteps), 
+    1], format = "%H:%M:%S"), col = "red", lty = 1)
+legend("topright", lty = 1, col = "red", legend = "Interval with max number of steps")
 ```
 
 ![plot of chunk unnamed-chunk-7](figure/unnamed-chunk-7.png) 
@@ -153,6 +160,11 @@ sum.steps.day.no.na <- aggregate(activity.no.na$steps, list(Date = format(activi
 colnames(sum.steps.day.no.na)[2] <- "StepsPerDay"
 hist(sum.steps.day.no.na$StepsPerDay, main = "Total number of steps per day (no NA)", 
     xlab = "Steps per day")
+abline(v = mean(sum.steps.day.no.na$StepsPerDay, na.rm = TRUE), col = "red")
+abline(v = median(sum.steps.day.no.na$StepsPerDay, na.rm = TRUE), col = "blue", 
+    lty = 2)
+legend("topright", lty = c(1, 2), col = c("red", "blue"), legend = c("Mean", 
+    "Median"))
 ```
 
 ![plot of chunk unnamed-chunk-11](figure/unnamed-chunk-11.png) 
@@ -210,7 +222,7 @@ Before creating the panel plot, I load the "lattice" library, I then use the *xy
 ```r
 library(lattice)
 xyplot(AvgSteps ~ as.POSIXct(Interval, format = "%H:%M:%S") | Daytype, data = avg.steps.interval.no.na, 
-    type = "l", layout = c(1, 2), main = "Average number of steps across all days (weekday or weekend) \n vs. 5-min interval", 
+    type = "l", layout = c(1, 2), main = "Average number of steps across all days (weekday/weekend) \n vs. 5-min interval", 
     xlab = "Time intervals", ylab = "Avg. number of steps (across all days)", 
     scales = list(x = list(format = "%H:%M:%S")))
 ```
