@@ -18,7 +18,7 @@ Sys.setlocale(locale = "en_GB.UTF-8")
 ```
 
 
-Below is the code used to load an preprocess the data. The loading step simply consists in reading the data with the *read.csv()* function and storing the result in the "activity" data frame. The preprocessing step consists in creating a new column in the data frame with the timestamp (date & time in POSIXct format). To do this I first need to change the interval format to HH:MM.
+Below is the code I used to load an preprocess the data. The loading step simply consists in reading the data with the *read.csv()* function and storing the result in the "activity" data frame. The preprocessing step consists in creating a new column in the data frame with the timestamp (date & time in POSIXct format). To do this I first need to change the interval format to HH:MM.
 
 
 
@@ -51,7 +51,7 @@ To make a histogram of the total number of steps I simply use the *hist()* funct
 
 
 ```r
-hist(sum.steps.day$StepsPerDay, main = "Total number of steps each day", xlab = "Steps per day")
+hist(sum.steps.day$StepsPerDay, main = "Total number of steps per day", xlab = "Steps per day")
 ```
 
 ![plot of chunk unnamed-chunk-4](figure/unnamed-chunk-4.png) 
@@ -61,6 +61,7 @@ To compute the mean and median I use the *mean()* and *median()* function.
 
 
 ```r
+options(scipen = 999)
 mean(sum.steps.day$StepsPerDay, na.rm = TRUE)
 ```
 
@@ -77,7 +78,7 @@ median(sum.steps.day$StepsPerDay, na.rm = TRUE)
 ```
 
 
-To conclude the mean total number of steps per day is 1.0766 &times; 10<sup>4</sup> and the median total number of steps per day is 10765.
+To conclude the mean total number of steps per day is 10766.1887 and the median total number of steps per day is 10765.
 
 ## What is the average daily activity pattern ?
 
@@ -91,13 +92,13 @@ colnames(avg.steps.interval)[2] <- "AvgSteps"
 ```
 
 
-To plot the time series of the 5-minute interval and the average number of steps taken averaged across all days I use the *plot()* function of the Base package. Using POSIXct type allows a plot with the right x-axis labelled with the hours of the day.
+To plot the time series of the 5-minute intervals and the average number of steps taken averaged across all days I use the *plot()* function of the Base package. Using POSIXct type allows a plot with the  x-axis correctly labelled with the hours of the day.
 
 
 ```r
 plot(as.POSIXct(avg.steps.interval$Interval, format = "%H:%M:%S"), avg.steps.interval$AvgSteps, 
     type = "l", main = "Average number of steps across all days vs. 5-min interval", 
-    xlab = "Interval", ylab = "Avg. number of steps (across all days)")
+    xlab = "Time intervals", ylab = "Avg. number of steps (across all days)")
 ```
 
 ![plot of chunk unnamed-chunk-7](figure/unnamed-chunk-7.png) 
@@ -131,7 +132,7 @@ sum(is.na(activity$steps))
 ```
 
 
-The total number of missing values is 2304. My strategy of choice to fill the missing values in the dataset is to use the mean value for that 5-minute interval. To do this I begin by replacing all NA values by 0, I then create a "mask" vector with the 288 average number of steps across all days repeated 61 times and with 0 values where the corresponding non NA values of the dataset are. It remains to add the altered dataset and the mask to obtain the filled data frame "activity.no.na".
+The total number of missing values is 2304. My strategy of choice to fill in the missing values in the dataset is to use the mean value for that 5-minute interval across all days. To do this I begin by replacing all NA values by 0, I then create a "steps.mask" vector with the 288 average number of steps across all days repeated 61 times and with 0 values where the corresponding non NA values of the dataset are. It remains to add the altered dataset and the mask to obtain the filled in data frame "activity.no.na".
 
 
 ```r
@@ -150,7 +151,7 @@ I use the same technique as before to make a histogram of the total number of st
 sum.steps.day.no.na <- aggregate(activity.no.na$steps, list(Date = format(activity.no.na$timestamp, 
     "%Y-%m-%d")), sum)
 colnames(sum.steps.day.no.na)[2] <- "StepsPerDay"
-hist(sum.steps.day.no.na$StepsPerDay, main = "Total number of steps each day (no NA)", 
+hist(sum.steps.day.no.na$StepsPerDay, main = "Total number of steps per day (no NA)", 
     xlab = "Steps per day")
 ```
 
@@ -177,7 +178,7 @@ median(sum.steps.day.no.na$StepsPerDay)
 ```
 
 
-To conclude the mean total number of steps per day with the filled in data frame is 1.0766 &times; 10<sup>4</sup> and the median total number of steps per day is 1.0766 &times; 10<sup>4</sup>.  
+To conclude the mean total number of steps per day with the filled in data frame is 10766.1887 and the median total number of steps per day is 10766.1887.  
 
 We see that the mean total number of steps per day with the "activity.no.na" data frame is unchanged compared to the mean total number of steps per day with the "activity" data frame, this is completely understandable as we used the mean total number of steps to fill in the NA values. However, the median total number of steps per day with the "activity.no.na" data frame is greater compared to the median total number of steps per day with the "activity" data frame, this is due to the fact that we add more non NA values to the second half of  the data set than to the first half.
 
@@ -198,25 +199,26 @@ I then proceed to create a new data frame "avg.steps.interval.no.na" which conta
 
 ```r
 avg.steps.interval.no.na <- aggregate(activity.no.na$steps, list(Interval = format(activity.no.na$timestamp, 
-    "%H:%M:%S"), Daytype = activity.no.na$daytype), mean, na.rm = TRUE)
+    "%H:%M:%S"), Daytype = activity.no.na$daytype), mean)
 colnames(avg.steps.interval.no.na)[3] <- "AvgSteps"
 ```
 
 
-Before creating the panel plot I load the "lattice" library, I then use the *xyplot()* function to plot the time series of the 5-minute interval and the average number of steps averaged across all weekday days or weekend days.
+Before creating the panel plot, I load the "lattice" library, I then use the *xyplot()* function to plot the time series of the 5-minute intervals and the average number of steps taken averaged across all weekdays or weekend days.
 
 
 ```r
 library(lattice)
 xyplot(AvgSteps ~ as.POSIXct(Interval, format = "%H:%M:%S") | Daytype, data = avg.steps.interval.no.na, 
     type = "l", layout = c(1, 2), main = "Average number of steps across all days (weekday or weekend) \n vs. 5-min interval", 
-    xlab = "Interval", ylab = "Avg. number of steps (across all days)", scales = list(x = list(format = "%H:%M:%S")))
+    xlab = "Time intervals", ylab = "Avg. number of steps (across all days)", 
+    scales = list(x = list(format = "%H:%M:%S")))
 ```
 
 ![plot of chunk unnamed-chunk-15](figure/unnamed-chunk-15.png) 
 
 
-To summarize the differences in the activity patterns between weekdays and weekends I create a summary of the average number of steps conditioned by the "daytype" variable.
+To summarize the differences in the activity patterns between weekdays and weekend days, I create a summary of the average number of steps conditioned by the "Daytype" variable.
 
 
 ```r
@@ -235,4 +237,4 @@ tapply(avg.steps.interval.no.na$AvgSteps, avg.steps.interval.no.na$Daytype,
 ```
 
 
-The activity pattern on weekday days shows more variation (higher max value and higher Q3 - Q1) and lower mean and median. This allow me to conclude that the dispersion in the activity pattern on weekday days is more pronounced than on weekend days which tend to be more uniform.
+The activity pattern on weekdays shows more variation (higher max value and lower Q3 - Q1) and lower mean and median. This allow me to conclude that the dispersion in the activity pattern on weekdays is more pronounced than on weekend days which tend to be more uniform.
